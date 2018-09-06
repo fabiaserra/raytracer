@@ -4,4 +4,4 @@ This is just another implementation of a Ray Tracer based on Peter Shirley's [bo
 
 At this stage the ray tracer includes pretty much everything up until the second book "Ray Tracing: The Next Week" but I will try keep adding things to improve its performance and play with some other ray tracing concepts.
 
-[[https://github.com/fabiaserra/RayTracer/blob/master/renders/scene800_300.png]]
+![](renders/scene800_300.png)
