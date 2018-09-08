@@ -5,3 +5,4 @@ This is just another implementation of a Ray Tracer based on Peter Shirley's [bo
 At this stage the ray tracer includes pretty much everything up until the second book "Ray Tracing: The Next Week" but I will try keep adding things to improve its performance and play with some other ray tracing concepts.
 
 ![](renders/scene800_300.png)
+![](renders/simple_light_scene_3_1400samples.png)
