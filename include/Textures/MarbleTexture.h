@@ -2,11 +2,11 @@
 #include "Textures/Texture.h"
 #include "Utils/PerlinNoise.h"
 
-class NoiseTexture : public Texture
+class MarbleTexture : public Texture
 {
 public:
-	NoiseTexture(float scale = 1.f);
-    virtual ~NoiseTexture();
+    MarbleTexture(float scale = 1.f);
+    virtual ~MarbleTexture();
 
 	virtual Vec3 value(float u, float v, const Vec3& p) const;
 	

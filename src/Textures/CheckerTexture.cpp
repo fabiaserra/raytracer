@@ -9,6 +9,10 @@ CheckerTexture::CheckerTexture(std::shared_ptr<Texture> t0, std::shared_ptr<Text
 {
 }
 
+CheckerTexture::~CheckerTexture()
+{
+}
+
 Vec3 CheckerTexture::value(float u, float v, const Vec3& p) const
 {
 	float sines = sinf(10.f * p.x()) * sinf(10.f * p.y()) * sinf(10.f * p.z());

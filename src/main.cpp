@@ -15,6 +15,7 @@
 
 #include "Textures/ConstantTexture.h"
 #include "Textures/CheckerTexture.h"
+#include "Textures/MarbleTexture.h"
 #include "Textures/NoiseTexture.h"
 
 #include "Utils/RandomGenerator.h"
@@ -53,19 +54,18 @@ Vec3 getColor(const Ray& ray, BVHNode& world, int depth)
 
 BVHNode createSimpleLightScene()
 {
-    std::shared_ptr<Texture> noiseTexture = std::make_shared<NoiseTexture>(4.f);
     std::vector<std::shared_ptr<Hitable>> hitables(4);
 
     hitables[0] = std::make_shared<Sphere>(Vec3(0.f, -1000.f, -1.f), 1000.f,
-        std::make_shared<Lambertian>(noiseTexture));
+        std::make_shared<Lambertian>(std::make_shared<NoiseTexture>(1.0f)));
 
-    hitables[1] = std::make_shared<Sphere>(Vec3(0.f, -2.f, 0.f), 2.f,
-        std::make_shared<Lambertian>(noiseTexture));
+    hitables[1] = std::make_shared<Sphere>(Vec3(0.f, 2.f, 0.f), 2.f,
+        std::make_shared<Lambertian>(std::make_shared<MarbleTexture>(4.f)));
 
-    hitables[2] = std::make_shared<Sphere>(Vec3(0.f, 7.f, 0.f), 2.f,
-        std::make_shared<DiffuseLight>(std::make_shared<ConstantTexture>(Vec3(2.f, 2.f, 2.f))));
+    hitables[2] = std::make_shared<Sphere>(Vec3(0.f, 8.f, 0.f), 2.f,
+        std::make_shared<DiffuseLight>(std::make_shared<ConstantTexture>(Vec3(4.f, 4.f, 4.f))));
 
-    hitables[3] = std::make_shared<Rectangle>(3.f, 5.f, 1.f, 3.f, -2.f,
+    hitables[3] = std::make_shared<Rectangle>(-2.f, 2.f, 1.f, 4.f, -4.f,
         std::make_shared<DiffuseLight>(std::make_shared<ConstantTexture>(Vec3(4.f, 4.f, 4.f))));
 
     return BVHNode(hitables, 0.f, 1.f);
@@ -191,7 +191,7 @@ BVHNode createRandomScene(RandomGenerator randomGenerator)
 								0.5f * (1.f + randomGenerator.nextFloat()),
 								0.5f * (1.f + randomGenerator.nextFloat()),
 								0.5f * (1.f + randomGenerator.nextFloat())),
-							0.5 * randomGenerator.nextFloat())
+                            0.5f * randomGenerator.nextFloat())
 						));
 				#endif
 				}
@@ -244,26 +244,25 @@ int main()
     auto world = createSimpleLightScene();
 
 	// Image parameters
-	const int width = 500;
-	const int height = 200;
+    const int width = 800;
+    const int height = 300;
 	const int numChannels = 3;
 	std::vector<unsigned char> img(width * height * numChannels);
 
 	// Number of samples per pixel
-	const int numSamples = 100;
+    const int numSamples = 1400;
 
 	// Camera parameters
-    Vec3 lookFrom(13.f, 10.f, 5.f);
-	Vec3 lookAt(0.f, 0.f, 0.f);
+    Vec3 lookFrom(-25.f, 5.f, 6.f);
+    Vec3 lookAt(2.0f, 3.0f, 0.f);
 	float verticalFov = 20.f;
 	float focusDistance = 10.f;
 	float aperture = 0.f;
 	float shutterOpen = 0.f;
 	float shutterClose = 1.f;
-	Camera camera(
-        lookFrom, lookAt, Vec3(0.f, 1.f, 0.f), verticalFov,
-        static_cast<float>(width) / static_cast<float>(height),
-		aperture, focusDistance, shutterOpen, shutterClose);
+    Camera camera(lookFrom, lookAt, Vec3(0.f, 1.f, 0.f), verticalFov,
+                  static_cast<float>(width) / static_cast<float>(height),
+                  aperture, focusDistance, shutterOpen, shutterClose);
 
 	// Iterate over scene space 
 	for (int rowIndex = height - 1; rowIndex >= 0; --rowIndex)
@@ -289,7 +288,7 @@ int main()
 		}
 	}
 
-    stbi_write_png("simple_light_scene.png", width, height, numChannels, img.data(), width*numChannels);
+    stbi_write_png("simple_light_scene_3_1400samples.png", width, height, numChannels, img.data(), width*numChannels);
 
 	return 0;
 }
