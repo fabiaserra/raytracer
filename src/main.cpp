@@ -45,9 +45,9 @@ Vec3 getColor(const Ray& ray, BVHNode& world, int depth)
     else
     {
         return Vec3(0.f, 0.f, 0.f);
-        //		Vec3 unit_direction = unitVector(ray.direction());
-        //		float t = 0.5f * (unit_direction.y() + 1.f);
-        //		return (1.0f - t) * Vec3(1.0f, 1.0f, 1.0f) + t * Vec3(0.5f, 0.7f, 1.0f);
+//        Vec3 unit_direction = unitVector(ray.direction());
+//        float t = 0.5f * (unit_direction.y() + 1.f);
+//        return (1.0f - t) * Vec3(1.0f, 1.0f, 1.0f) + t * Vec3(0.5f, 0.7f, 1.0f);
     }
 }
 
@@ -228,13 +228,13 @@ int main()
     auto world = createCornellBox();
 
     // Image parameters
-    const int width = 600;
-    const int height = 600;
+    const int width = 800;
+    const int height = 800;
     const int numChannels = 3;
     std::vector<unsigned char> img(width * height * numChannels);
 
     // Number of samples per pixel
-    const int numSamples = 500;
+    const int numSamples = 1000;
 
     // Camera parameters
     Vec3 lookFrom(278.f, 278.f, -800.f);

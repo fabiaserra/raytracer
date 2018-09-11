@@ -55,7 +55,7 @@ XZRectangle::XZRectangle(float x0, float x1, float z0, float z1, float k, std::s
 
 bool XZRectangle::hit(const Ray &ray, float tMin, float tMax, HitRecord &record) const
 {
-    float t = (m_k - ray.origin().z()) / ray.direction().z();
+    float t = (m_k - ray.origin().y()) / ray.direction().y();
     if (t < tMin || t > tMax)
     {
         return false;
@@ -71,14 +71,14 @@ bool XZRectangle::hit(const Ray &ray, float tMin, float tMax, HitRecord &record)
     record.t = t;
     record.material = m_material;
     record.p = ray.pointAtParameter(t);
-    record.normal = Vec3(0.f, 0.f, 1.f);
+    record.normal = Vec3(0.f, 1.f, 0.f);
 
     return true;
 }
 
 bool XZRectangle::boundingBox(float time0, float time1, AABB &box) const
 {
-    box = AABB(Vec3(m_x0, m_z0, m_k - 0.0001f), Vec3(m_x1, m_z1, m_k + 0.0001f));
+    box = AABB(Vec3(m_x0, m_k - 0.0001f, m_z0), Vec3(m_x1, m_k + 0.0001f, m_z1));
     return true;
 }
 
@@ -96,7 +96,7 @@ YZRectangle::YZRectangle(float y0, float y1, float z0, float z1, float k, std::s
 
 bool YZRectangle::hit(const Ray &ray, float tMin, float tMax, HitRecord &record) const
 {
-    float t = (m_k - ray.origin().z()) / ray.direction().z();
+    float t = (m_k - ray.origin().x()) / ray.direction().x();
     if (t < tMin || t > tMax)
     {
         return false;
@@ -112,13 +112,13 @@ bool YZRectangle::hit(const Ray &ray, float tMin, float tMax, HitRecord &record)
     record.t = t;
     record.material = m_material;
     record.p = ray.pointAtParameter(t);
-    record.normal = Vec3(0.f, 0.f, 1.f);
+    record.normal = Vec3(1.f, 0.f, 0.f);
 
     return true;
 }
 
 bool YZRectangle::boundingBox(float time0, float time1, AABB &box) const
 {
-    box = AABB(Vec3(m_y0, m_z0, m_k - 0.0001f), Vec3(m_y1, m_z1, m_k + 0.0001f));
+    box = AABB(Vec3(m_k - 0.0001f, m_y0, m_z0), Vec3(m_k + 0.0001f, m_y1, m_z1));
     return true;
 }
