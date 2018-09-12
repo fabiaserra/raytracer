@@ -254,7 +254,7 @@ int main()
     std::vector<unsigned char> img(width * height * numChannels);
 
     // Number of samples per pixel
-    const int numSamples = 1500;
+    const int numSamples = 2500;
 
     // Camera parameters
     Vec3 lookFrom(278.f, 278.f, -800.f);
@@ -293,7 +293,7 @@ int main()
         }
     }
 
-    stbi_write_png("cornell_box.png", width, height, numChannels, img.data(), width*numChannels);
+    stbi_write_png("cornell_box_3.png", width, height, numChannels, img.data(), width*numChannels);
 
     return 0;
 }
