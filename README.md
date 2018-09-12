@@ -6,3 +6,5 @@ At this stage the ray tracer includes pretty much everything up until the second
 
 ![](renders/scene800_300.png)
 ![](renders/simple_light_scene_3_1400samples.png)
+![](renders/cornell_box.png)
+
