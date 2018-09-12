@@ -1,6 +1,7 @@
 #pragma once
 #include "Core/Ray.h"
 #include "Hitables/AABB.h"
+#define PI       3.1415926535f   // pi
 
 class Material;
 

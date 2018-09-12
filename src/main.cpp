@@ -2,12 +2,15 @@
 
 #include "Core/Camera.h"
 
+#include "Hitables/Box.h"
 #include "Hitables/Rectangle.h"
 #include "Hitables/Sphere.h"
-#include "Hitables/FlipNormals.h"
 #include "Hitables/MovingSphere.h"
 #include "Hitables/HitableList.h"
 #include "Hitables/BVHNode.h"
+#include "Hitables/Rotate.h"
+#include "Hitables/Translate.h"
+#include "Hitables/FlipNormals.h"
 
 #include "Materials/DiffuseLight.h"
 #include "Materials/Dielectric.h"
@@ -53,7 +56,7 @@ Vec3 getColor(const Ray& ray, BVHNode& world, int depth)
 
 BVHNode createCornellBox()
 {
-    std::vector<std::shared_ptr<Hitable>> hitables(6);
+    std::vector<std::shared_ptr<Hitable>> hitables(8);
 
     std::shared_ptr<Material> red = std::make_shared<Lambertian>(
                                         std::make_shared<ConstantTexture>(
@@ -66,15 +69,32 @@ BVHNode createCornellBox()
                                               Vec3(0.12f, 0.45f, 0.15f)));
     std::shared_ptr<Material> light = std::make_shared<DiffuseLight>(
                                           std::make_shared<ConstantTexture>(
-                                              Vec3(15.f, 15.f, 15.f)));
-
+                                                  Vec3(15.f, 15.f, 15.f)));
+    // Walls
     hitables[0] = std::make_shared<FlipNormals>(std::make_shared<YZRectangle>(0.f, 555.f, 0.f, 555.f, 555.f, green));
     hitables[1] = std::make_shared<YZRectangle>(0.f, 555.f, 0.f, 555.f, 0.f, red);
-    hitables[2] = std::make_shared<XZRectangle>(213.f, 343.f, 227.f, 332.f, 554.f, light);
-    hitables[3] = std::make_shared<FlipNormals>(std::make_shared<XZRectangle>(0.f, 555.f, 0.f, 555.f, 555.f, white));
-    hitables[4] = std::make_shared<XZRectangle>(0.f, 555.f, 0.f, 555.f, 0.f, white);
-    hitables[5] = std::make_shared<FlipNormals>(std::make_shared<XYRectangle>(0.f, 555.f, 0.f, 555.f, 555.f, white));
+    hitables[2] = std::make_shared<FlipNormals>(std::make_shared<XZRectangle>(0.f, 555.f, 0.f, 555.f, 555.f, white));
+    hitables[3] = std::make_shared<XZRectangle>(0.f, 555.f, 0.f, 555.f, 0.f, white);
+    hitables[4] = std::make_shared<FlipNormals>(std::make_shared<XYRectangle>(0.f, 555.f, 0.f, 555.f, 555.f, white));
 
+    // Light
+    hitables[5] = std::make_shared<XZRectangle>(213.f, 343.f, 227.f, 332.f, 554.f, light);
+
+    // Boxes
+    hitables[6] = std::make_shared<Translate>(std::make_shared<RotateY>(
+                                                  std::make_shared<Box>(
+                                                      Vec3(0.f, 0.f, 0.f),
+                                                      Vec3(165.f, 165.f, 165.f),
+                                                      white),
+                                                  -18.f),
+                                              Vec3(130.f, 0.f, 65.f));
+    hitables[7] = std::make_shared<Translate>(std::make_shared<RotateY>(
+                                                  std::make_shared<Box>(
+                                                      Vec3(0.f, 0.f, 0.f),
+                                                      Vec3(165.f, 330.f, 165.f),
+                                                      white),
+                                                  15.f),
+                                              Vec3(265.f, 0.f, 295.f));
     return BVHNode(hitables, 0.f, 1.f);
 }
 
@@ -228,13 +248,13 @@ int main()
     auto world = createCornellBox();
 
     // Image parameters
-    const int width = 800;
-    const int height = 800;
+    const int width = 500;
+    const int height = 500;
     const int numChannels = 3;
     std::vector<unsigned char> img(width * height * numChannels);
 
     // Number of samples per pixel
-    const int numSamples = 1000;
+    const int numSamples = 1500;
 
     // Camera parameters
     Vec3 lookFrom(278.f, 278.f, -800.f);
@@ -267,9 +287,9 @@ int main()
             color = Vec3(sqrt(color[0]), sqrt(color[1]), sqrt(color[2]));
 
             int y = height - rowIndex - 1;
-            img[(columnIndex + y * width) * numChannels + 0] = (unsigned char)(255.99f * color[0]);
-            img[(columnIndex + y * width) * numChannels + 1] = (unsigned char)(255.99f * color[1]);
-            img[(columnIndex + y * width) * numChannels + 2] = (unsigned char)(255.99f * color[2]);
+            img[(columnIndex + y * width) * numChannels + 0] = static_cast<unsigned char>(255.99f * color[0]);
+            img[(columnIndex + y * width) * numChannels + 1] = static_cast<unsigned char>(255.99f * color[1]);
+            img[(columnIndex + y * width) * numChannels + 2] = static_cast<unsigned char>(255.99f * color[2]);
         }
     }
 

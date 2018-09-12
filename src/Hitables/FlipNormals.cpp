@@ -1,9 +1,5 @@
 #include "Hitables/FlipNormals.h"
 
-FlipNormals::FlipNormals()
-{
-}
-
 FlipNormals::FlipNormals(std::shared_ptr<Hitable> pointer)
     : m_pointer(pointer)
 {

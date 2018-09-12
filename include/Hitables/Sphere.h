@@ -1,5 +1,4 @@
 #pragma once
-#define PI       3.1415926535f   // pi
 
 #include "Hitables/Hitable.h"
 
