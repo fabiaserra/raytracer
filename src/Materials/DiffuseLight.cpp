@@ -4,7 +4,8 @@ DiffuseLight::DiffuseLight(std::shared_ptr<Texture> emit) : m_emit(emit)
 {
 }
 
-bool DiffuseLight::scatter(const Ray &rayIn, const HitRecord &rec, Vec3 &attenuation, Ray &scattered)
+bool DiffuseLight::scatter(const Ray &rayIn, const HitRecord &rec,
+                           Vec3 &attenuation, Ray &scattered)
 {
     return false;
 }

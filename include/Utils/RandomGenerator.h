@@ -11,23 +11,29 @@
 class RandomGenerator
 {
 public:
-	RandomGenerator(unsigned int seed = 1);
+    RandomGenerator() = default;
 
-	float nextFloat();
-	Vec3 randomInUnitSphere();
-	Vec3 randomInUnitDisk();
-	Vec3 randomUnitVector();
+    RandomGenerator(unsigned int seed);
+
+    float nextFloat();
+    Vec3 randomInUnitSphere();
+    Vec3 randomInUnitDisk();
+    Vec3 randomUnitVector();
+
+    static float randFloat();
 
 private:
-	pcg32 m_engine;
-	std::uniform_real_distribution<float> m_floatDistribution;
+    pcg32 m_engine;
+    std::uniform_real_distribution<float> m_floatDistribution;
+
+    static pcg32 s_engine;
+    static std::uniform_real_distribution<float> s_floatDistribution;
 };
 
 inline float RandomGenerator::nextFloat()
 {
-	return m_floatDistribution(m_engine);
+    return m_floatDistribution(m_engine);
 }
-
 
 //// Initialize random engine using standard mersenne twister
 //// seeded with randomDevice

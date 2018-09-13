@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "Core/Camera.h"
 
 #include "Hitables/Box.h"
@@ -11,6 +9,7 @@
 #include "Hitables/Rotate.h"
 #include "Hitables/Translate.h"
 #include "Hitables/FlipNormals.h"
+#include "Hitables/ConstantMedium.h"
 
 #include "Materials/DiffuseLight.h"
 #include "Materials/Dielectric.h"
@@ -27,6 +26,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STBI_MSC_SECURE_CRT
 #include "Utils/stb_image_write.h"
+
+#include <iostream>
 
 Vec3 getColor(const Ray& ray, BVHNode& world, int depth)
 {
@@ -52,6 +53,60 @@ Vec3 getColor(const Ray& ray, BVHNode& world, int depth)
 //        float t = 0.5f * (unit_direction.y() + 1.f);
 //        return (1.0f - t) * Vec3(1.0f, 1.0f, 1.0f) + t * Vec3(0.5f, 0.7f, 1.0f);
     }
+}
+
+BVHNode createSmokeCornellBox()
+{
+    std::vector<std::shared_ptr<Hitable>> hitables(8);
+
+    std::shared_ptr<Material> red = std::make_shared<Lambertian>(
+                                        std::make_shared<ConstantTexture>(
+                                            Vec3(0.65f, 0.05f, 0.05f)));
+    std::shared_ptr<Material> white = std::make_shared<Lambertian>(
+                                          std::make_shared<ConstantTexture>(
+                                              Vec3(0.73f, 0.73f, 0.73f)));
+    std::shared_ptr<Material> green = std::make_shared<Lambertian>(
+                                          std::make_shared<ConstantTexture>(
+                                              Vec3(0.12f, 0.45f, 0.15f)));
+    std::shared_ptr<Material> light = std::make_shared<DiffuseLight>(
+                                          std::make_shared<ConstantTexture>(
+                                                  Vec3(7.f, 7.f, 7.f)));
+    // Walls
+    hitables[0] = std::make_shared<FlipNormals>(std::make_shared<YZRectangle>(0.f, 555.f, 0.f, 555.f, 555.f, green));
+    hitables[1] = std::make_shared<YZRectangle>(0.f, 555.f, 0.f, 555.f, 0.f, red);
+    hitables[2] = std::make_shared<FlipNormals>(std::make_shared<XZRectangle>(0.f, 555.f, 0.f, 555.f, 555.f, white));
+    hitables[3] = std::make_shared<XZRectangle>(0.f, 555.f, 0.f, 555.f, 0.f, white);
+    hitables[4] = std::make_shared<FlipNormals>(std::make_shared<XYRectangle>(0.f, 555.f, 0.f, 555.f, 555.f, white));
+
+    // Light
+    hitables[5] = std::make_shared<XZRectangle>(113.f, 443.f, 127.f, 432.f, 554.f, light);
+
+    // Boxes
+    std::shared_ptr<Hitable> box1 = std::make_shared<Translate>(
+                                        std::make_shared<RotateY>(
+                                            std::make_shared<Box>(
+                                                Vec3(0.f, 0.f, 0.f),
+                                                Vec3(165.f, 165.f, 165.f),
+                                                white),
+                                            -18.f),
+                                        Vec3(130.f, 0.f, 65.f));
+
+    std::shared_ptr<Hitable> box2 = std::make_shared<Translate>(
+                                        std::make_shared<RotateY>(
+                                            std::make_shared<Box>(
+                                                Vec3(0.f, 0.f, 0.f),
+                                                Vec3(165.f, 330.f, 165.f),
+                                                white),
+                                            15.f),
+                                        Vec3(265.f, 0.f, 295.f));
+
+    hitables[6] = std::make_shared<ConstantMedium>(
+                      box1, 0.01f, std::make_shared<ConstantTexture>(Vec3(1.f, 1.f, 1.f)));
+
+    hitables[7] = std::make_shared<ConstantMedium>(
+                      box2, 0.01f, std::make_shared<ConstantTexture>(Vec3(0.f, 0.f, 0.f)));
+
+    return BVHNode(hitables, 0.f, 1.f);
 }
 
 BVHNode createCornellBox()
@@ -245,16 +300,16 @@ int main()
     RandomGenerator randomGenerator;
 
     // Create scene
-    auto world = createCornellBox();
+    auto world = createSmokeCornellBox();
 
     // Image parameters
-    const int width = 500;
-    const int height = 500;
+    const int width = 250;
+    const int height = 250;
     const int numChannels = 3;
     std::vector<unsigned char> img(width * height * numChannels);
 
     // Number of samples per pixel
-    const int numSamples = 2500;
+    const int numSamples = 2000;
 
     // Camera parameters
     Vec3 lookFrom(278.f, 278.f, -800.f);
@@ -293,7 +348,7 @@ int main()
         }
     }
 
-    stbi_write_png("cornell_box_3.png", width, height, numChannels, img.data(), width*numChannels);
+    stbi_write_png("cornell_box_4.png", width, height, numChannels, img.data(), width*numChannels);
 
     return 0;
 }

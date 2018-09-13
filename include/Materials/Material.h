@@ -5,6 +5,7 @@
 class Material
 {
 public:
+    Material();
     virtual ~Material() = 0;
 	virtual bool scatter(const Ray& rayIn, const HitRecord& rec, Vec3& attenuation, Ray& scattered) = 0;
     virtual Vec3 emitted(float u, float v, const Vec3& p) const;
