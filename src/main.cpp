@@ -29,7 +29,9 @@
 
 #include <iostream>
 
-Vec3 getColor(const Ray& ray, BVHNode& world, int depth)
+// Template for either BVHNode or HitableList
+template <class HitableGroup>
+Vec3 getColor(const Ray& ray, HitableGroup& world, int depth)
 {
     HitRecord record;
     if (world.hit(ray, 0.001f, FLT_MAX, record))
@@ -49,10 +51,118 @@ Vec3 getColor(const Ray& ray, BVHNode& world, int depth)
     else
     {
         return Vec3(0.f, 0.f, 0.f);
-//        Vec3 unit_direction = unitVector(ray.direction());
-//        float t = 0.5f * (unit_direction.y() + 1.f);
-//        return (1.0f - t) * Vec3(1.0f, 1.0f, 1.0f) + t * Vec3(0.5f, 0.7f, 1.0f);
     }
+}
+
+HitableList createNextWeekFinalRender()
+{
+    std::vector<std::shared_ptr<Hitable>> hitables(10);
+
+
+    std::shared_ptr<Material> white = std::make_shared<Lambertian>(
+                                          std::make_shared<ConstantTexture>(
+                                              Vec3(0.73f, 0.73f, 0.73f)));
+
+    std::shared_ptr<Material> ground = std::make_shared<Lambertian>(
+                                           std::make_shared<ConstantTexture>(
+                                                   Vec3(0.12f, 0.45f, 0.15f)));
+
+    // Create ground with randomly sized boxes
+    size_t n = 20;
+    std::vector<std::shared_ptr<Hitable>> groundBoxes(n*n);
+    for (size_t i = 0; i < n; ++i)
+    {
+        for (size_t j = 0; j < n; ++j)
+        {
+            float w = 100.f;
+            float x0 = -1000.f + static_cast<float>(i)*w;
+            float z0 = -1000.f + static_cast<float>(j)*w;
+            float y0 = 0.f;
+            float x1 = x0 + w;
+            float y1 = 100.f * RandomGenerator::randFloat() + 0.01f;
+            float z1 = z0 + w;
+            groundBoxes[i * n + j] = std::make_shared<Box>(Vec3(x0, y0, z0),
+                                                          Vec3(x1, y1, z1),
+                                                          ground);
+        }
+    }
+
+    size_t numHit = 0;
+    hitables[numHit++] = std::make_shared<BVHNode>(groundBoxes, 0.f, 1.f);
+
+    // Light
+    std::shared_ptr<Material> light = std::make_shared<DiffuseLight>(
+                                          std::make_shared<ConstantTexture>(
+                                              Vec3(7.f, 7.f, 7.f)));
+    hitables[numHit++] = std::make_shared<XZRectangle>(123.f, 423.f, 147.f, 412.f, 554.f, light);
+
+    // Moving sphere
+    Vec3 center(400.f, 400.f, 200.f);
+    hitables[numHit++] = std::make_shared<MovingSphere>(center, center + Vec3(30.f, 0.f, 0.f), 0.f, 1.f, 50.f,
+                                                        std::make_shared<Lambertian>(
+                                                            std::make_shared<ConstantTexture>(Vec3(0.7f, 0.3f, 0.1f)))
+                                                        );
+    // Spheres with different materials
+
+    // Dielectric
+    hitables[numHit++] = std::make_shared<Sphere>(
+                             Vec3(260.f, 150.f, 45.f),
+                             50.f,
+                             std::make_shared<Dielectric>(1.5f));
+
+    // Metal
+    hitables[numHit++] = std::make_shared<Sphere>(
+                             Vec3(0.f, 150.f, 145.f),
+                             50.f,
+                             std::make_shared<Metal>(Vec3(0.8f, 0.8f, 0.9f), 10.f));
+
+    // Volume
+    std::shared_ptr<Hitable> boundary = std::make_shared<Sphere>(
+                                            Vec3(360.f, 150.f, 145.f),
+                                            70.f,
+                                            std::make_shared<Dielectric>(1.5f));
+    hitables[numHit++] = boundary;
+
+    hitables[numHit++] = std::make_shared<ConstantMedium>(
+                             boundary, 0.2f,
+                             std::make_shared<ConstantTexture>(Vec3(0.2f, 0.4f, 0.9f)));
+
+    // Volume surrounding the whole scene
+    boundary = std::make_shared<Sphere>(
+                   Vec3(0.f, 0.f, 0.f),
+                   5000.f,
+                   std::make_shared<Dielectric>(1.5f));
+
+    hitables[numHit++] = std::make_shared<ConstantMedium>(
+                             boundary, 0.0001f,
+                             std::make_shared<ConstantTexture>(Vec3(1.0f, 1.0f, 1.0f)));
+
+    // Noise Texture
+    std::shared_ptr<Texture> noiseTexture = std::make_shared<MarbleTexture>(0.2f);
+    hitables[numHit++] = std::make_shared<Sphere>(
+                             Vec3(220.f, 280.f, 300.f),
+                             80.f,
+                             std::make_shared<Lambertian>(noiseTexture));
+
+
+    // Create box with a bunch of sphere instances
+    size_t numSpheres = 1000;
+    std::vector<std::shared_ptr<Hitable>> boxSpheres(numSpheres);
+    for (size_t i = 0; i < numSpheres; ++i)
+    {
+        boxSpheres[i] = std::make_shared<Sphere>(Vec3(165.f * RandomGenerator::randFloat(),
+                                                      165.f * RandomGenerator::randFloat(),
+                                                      165.f * RandomGenerator::randFloat()),
+                                                 10.f,
+                                                 white);
+    }
+    hitables[numHit++] = std::make_shared<Translate>(
+                             std::make_shared<RotateY>(
+                                 std::make_shared<BVHNode>(boxSpheres, 0.f, 1.f)
+                                 , 15.f),
+                             Vec3(-100.f, 270.f, 395.f));
+
+    return HitableList(hitables);
 }
 
 BVHNode createSmokeCornellBox()
@@ -197,6 +307,7 @@ BVHNode createSimpleScene()
 BVHNode createTwoSpheresScene()
 {
     std::vector<std::shared_ptr<Hitable>> hitables;
+    hitables.reserve(2);
 
     std::shared_ptr<Texture> noiseTexture = std::make_shared<NoiseTexture>(2.f);
 
@@ -216,9 +327,13 @@ BVHNode createTwoSpheresScene()
     return BVHNode(hitables, 0.f, 1.f);
 }
 
-BVHNode createRandomScene(RandomGenerator randomGenerator)
+BVHNode createRandomScene()
 {
+    size_t n = 20;
     std::vector<std::shared_ptr<Hitable>> hitables;
+
+    // Reserve the number of hitables that we will be creating
+    hitables.reserve((2 * n) * (2 * n) + 4);
 
     std::shared_ptr<Texture> checkerTexture = std::make_shared<CheckerTexture>(
                                                   std::make_shared<ConstantTexture>(Vec3(0.1f, 0.1f, 0.1f)),
@@ -232,12 +347,12 @@ BVHNode createRandomScene(RandomGenerator randomGenerator)
                            std::make_shared<Lambertian>(checkerTexture))
                        );
 
-    for (int a = -20; a < 20; ++a)
+    for (size_t a = -n; a < n; ++a)
     {
-        for (int b = -20; b < 20; ++b)
+        for (size_t b = -n; b < n; ++b)
         {
-            float chooseMaterial = randomGenerator.nextFloat();
-            Vec3 center(a + 0.9f + randomGenerator.nextFloat(), 0.2f, b + 0.9f + randomGenerator.nextFloat());
+            float chooseMaterial = RandomGenerator::randFloat();
+            Vec3 center(a + 0.9f + RandomGenerator::randFloat(), 0.2f, b + 0.9f + RandomGenerator::randFloat());
             if ((center - Vec3(4.f, 0.2f, 0.f)).length() > 0.9f)
             {
                 if (chooseMaterial < 0.8f) // diffuse
@@ -247,9 +362,9 @@ BVHNode createRandomScene(RandomGenerator randomGenerator)
                                            0.2f,
                                            std::make_shared<Lambertian>(
                                                std::make_shared<ConstantTexture>(Vec3(
-                                                                                     randomGenerator.nextFloat() * randomGenerator.nextFloat(),
-                                                                                     randomGenerator.nextFloat() * randomGenerator.nextFloat(),
-                                                                                     randomGenerator.nextFloat() * randomGenerator.nextFloat())))
+                                                                                     RandomGenerator::randFloat() * RandomGenerator::randFloat(),
+                                                                                     RandomGenerator::randFloat() * RandomGenerator::randFloat(),
+                                                                                     RandomGenerator::randFloat() * RandomGenerator::randFloat())))
                                            ));
                 }
                 else if (chooseMaterial < 0.95f) // metal
@@ -259,10 +374,10 @@ BVHNode createRandomScene(RandomGenerator randomGenerator)
                                            0.2f,
                                            std::make_shared<Metal>(
                                                Vec3(
-                                                   0.5f * (1.f + randomGenerator.nextFloat()),
-                                                   0.5f * (1.f + randomGenerator.nextFloat()),
-                                                   0.5f * (1.f + randomGenerator.nextFloat())),
-                                               0.5f * randomGenerator.nextFloat())
+                                                   0.5f * (1.f + RandomGenerator::randFloat()),
+                                                   0.5f * (1.f + RandomGenerator::randFloat()),
+                                                   0.5f * (1.f + RandomGenerator::randFloat())),
+                                               0.5f * RandomGenerator::randFloat())
                                            ));
                 }
                 else // glass
@@ -270,7 +385,7 @@ BVHNode createRandomScene(RandomGenerator randomGenerator)
                     hitables.push_back(std::make_shared<Sphere>(
                                            center,
                                            0.2f,
-                                           std::make_shared<Dielectric>(1.f + randomGenerator.nextFloat())
+                                           std::make_shared<Dielectric>(1.f + RandomGenerator::randFloat())
                                            ));
                 }
             }
@@ -297,10 +412,8 @@ BVHNode createRandomScene(RandomGenerator randomGenerator)
 
 int main()
 {
-    RandomGenerator randomGenerator;
-
     // Create scene
-    auto world = createSmokeCornellBox();
+    auto world = createNextWeekFinalRender();
 
     // Image parameters
     const int width = 250;
@@ -312,7 +425,7 @@ int main()
     const int numSamples = 2000;
 
     // Camera parameters
-    Vec3 lookFrom(278.f, 278.f, -800.f);
+    Vec3 lookFrom(478.f, 278.f, -600.f);
     Vec3 lookAt(278.f, 278.f, 0.f);
     Vec3 viewUp(0.f, 1.f, 0.f);
     float verticalFov = 40.f;
@@ -332,8 +445,8 @@ int main()
             Vec3 color(0.f, 0.f, 0.f);
             for (int sample_index = 0; sample_index < numSamples; ++sample_index)
             {
-                float s = (static_cast<float>(columnIndex) + randomGenerator.nextFloat()) / static_cast<float>(width);
-                float t = (static_cast<float>(rowIndex) + randomGenerator.nextFloat()) / static_cast<float>(height);
+                float s = (static_cast<float>(columnIndex) + RandomGenerator::randFloat()) / static_cast<float>(width);
+                float t = (static_cast<float>(rowIndex) + RandomGenerator::randFloat()) / static_cast<float>(height);
                 Ray ray = camera.getRay(s, t);
                 color += getColor(ray, world, 0);
             }
@@ -348,7 +461,7 @@ int main()
         }
     }
 
-    stbi_write_png("cornell_box_4.png", width, height, numChannels, img.data(), width*numChannels);
+    stbi_write_png("nextWeek_final_render_2.png", width, height, numChannels, img.data(), width*numChannels);
 
     return 0;
 }
