@@ -28,6 +28,7 @@ bool Dielectric::scatter(const Ray & rayIn, const HitRecord & record, Vec3 & att
         outward_normal = -record.normal;
         n1_over_n2 = m_refractive_index;
         cosine = ray_dot_normal / rayIn.direction().length();
+        cosine = sqrtf(1.f - m_refractive_index * m_refractive_index * (1.f - cosine * cosine));
     }
     // we are outside the surface, we revert the index of refraction and we want the cos(theta) to be positive
     else
