@@ -113,8 +113,8 @@ HitableList createNextWeekFinalRender()
     // Metal
     hitables[numHit++] = std::make_shared<Sphere>(
                              Vec3(0.f, 150.f, 145.f),
-                             50.f,
-                             std::make_shared<Metal>(Vec3(0.8f, 0.8f, 0.9f), 10.f));
+                             100.f,
+                             std::make_shared<Metal>(Vec3(0.8f, 0.8f, 0.9f), 1.f));
 
     // Volume
     std::shared_ptr<Hitable> boundary = std::make_shared<Sphere>(
@@ -138,7 +138,7 @@ HitableList createNextWeekFinalRender()
                              std::make_shared<ConstantTexture>(Vec3(1.0f, 1.0f, 1.0f)));
 
     // Noise Texture
-    std::shared_ptr<Texture> noiseTexture = std::make_shared<MarbleTexture>(0.2f);
+    std::shared_ptr<Texture> noiseTexture = std::make_shared<MarbleTexture>(0.1f);
     hitables[numHit++] = std::make_shared<Sphere>(
                              Vec3(220.f, 280.f, 300.f),
                              80.f,
@@ -329,7 +329,7 @@ BVHNode createTwoSpheresScene()
 
 BVHNode createRandomScene()
 {
-    size_t n = 20;
+    int n = 20;
     std::vector<std::shared_ptr<Hitable>> hitables;
 
     // Reserve the number of hitables that we will be creating
@@ -347,9 +347,9 @@ BVHNode createRandomScene()
                            std::make_shared<Lambertian>(checkerTexture))
                        );
 
-    for (size_t a = -n; a < n; ++a)
+    for (int a = -n; a < n; ++a)
     {
-        for (size_t b = -n; b < n; ++b)
+        for (int b = -n; b < n; ++b)
         {
             float chooseMaterial = RandomGenerator::randFloat();
             Vec3 center(a + 0.9f + RandomGenerator::randFloat(), 0.2f, b + 0.9f + RandomGenerator::randFloat());
@@ -416,13 +416,13 @@ int main()
     auto world = createNextWeekFinalRender();
 
     // Image parameters
-    const int width = 250;
-    const int height = 250;
+    const int width = 200;
+    const int height = 200;
     const int numChannels = 3;
     std::vector<unsigned char> img(width * height * numChannels);
 
     // Number of samples per pixel
-    const int numSamples = 2000;
+    const int numSamples = 1000;
 
     // Camera parameters
     Vec3 lookFrom(478.f, 278.f, -600.f);
@@ -461,7 +461,7 @@ int main()
         }
     }
 
-    stbi_write_png("nextWeek_final_render_2.png", width, height, numChannels, img.data(), width*numChannels);
+    stbi_write_png("AmyWilliamsBVH.png", width, height, numChannels, img.data(), width*numChannels);
 
     return 0;
 }

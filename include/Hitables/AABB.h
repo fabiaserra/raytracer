@@ -12,6 +12,8 @@ inline float ffmax(float a, float b)
     return a > b ? a : b;
 }
 
+// Modifications inspired by Amy Williams BVH Optimization
+// http://people.csail.mit.edu/amy/papers/box-jgt.pdf
 class AABB
 {
 public:
@@ -26,16 +28,15 @@ public:
     static AABB surroundingBox(AABB& box0, AABB& box1);
 
 private:
-    Vec3 m_min;
-    Vec3 m_max;
+    Vec3 m_bounds[2];
 };
 
 inline Vec3 AABB::min() const
 {
-    return m_min;
+    return m_bounds[0];
 }
 
 inline Vec3 AABB::max() const
 {
-    return m_max;
+    return m_bounds[1];
 }

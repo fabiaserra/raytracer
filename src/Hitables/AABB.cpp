@@ -4,33 +4,51 @@ AABB::AABB()
 {
 }
 
-AABB::AABB(const Vec3& min, const Vec3& max) : m_min(min), m_max(max)
+AABB::AABB(const Vec3& min, const Vec3& max)
+    : m_bounds{min, max}
 {
 }
 
-bool AABB::hit(const Ray & ray, float tMin, float tMax) const
+bool AABB::hit(const Ray& ray, float tMin, float tMax) const
 {
-	for (int a = 0; a < 3; ++a)
-	{
-		float directionInverse = 1.f / ray.direction()[a];
-		float t0 = (min()[a] - ray.origin()[a]) * directionInverse;
-		float t1 = (max()[a] - ray.origin()[a]) * directionInverse;
+    float txMin, txMax, tyMin, tyMax, tzMin, tzMax;
 
-		if (directionInverse < 0.f)
-		{
-			std::swap(t0, t1);
-		}
+    txMin = (m_bounds[ray.m_sign[0]].x() - ray.origin().x()) * ray.invDirection().x();
+    txMax = (m_bounds[1 - ray.m_sign[0]].x() - ray.origin().x()) * ray.invDirection().x();
 
-		tMin = t0 > tMin ? t0 : tMin;
-		tMax = t1 < tMax ? t1 : tMax;
+    tyMin = (m_bounds[ray.m_sign[1]].y() - ray.origin().y()) * ray.invDirection().y();
+    tyMax = (m_bounds[1 - ray.m_sign[1]].y() - ray.origin().y()) * ray.invDirection().y();
 
-		if (tMax <= tMin)
-		{
-			return false;
-		}
-	}
+    if ((txMin > tyMax) || (tyMin > txMax))
+    {
+        return false;
+    }
+    if (tyMin > txMin)
+    {
+        txMin = tyMin;
+    }
+    if (tyMax < txMax)
+    {
+        txMax = tyMax;
+    }
 
-	return true;
+    tzMin = (m_bounds[ray.m_sign[2]].z() - ray.origin().z()) * ray.invDirection().z();
+    tzMax = (m_bounds[1 - ray.m_sign[2]].z() - ray.origin().z()) * ray.invDirection().z();
+
+    if ((txMin > tzMax) || (tzMin > txMax))
+    {
+        return false;
+    }
+    if (tzMin > txMin)
+    {
+        txMin = tzMin;
+    }
+    if (tzMax < txMax)
+    {
+        txMax = tzMax;
+    }
+
+    return ((txMin < tMax) && (txMax > tMin));
 }
 
 AABB AABB::surroundingBox(AABB& box0, AABB& box1)
