@@ -98,9 +98,9 @@ HitableList createNextWeekFinalRender()
 
     // Moving sphere
     Vec3 center(400.f, 400.f, 200.f);
-    hitables[numHit++] = std::make_shared<MovingSphere>(center, center + Vec3(30.f, 0.f, 0.f), 0.f, 1.f, 50.f,
+    hitables[numHit++] = std::make_shared<MovingSphere>(center, center + Vec3(20.f, 5.f, 0.f), 0.f, 1.f, 50.f,
                                                         std::make_shared<Lambertian>(
-                                                            std::make_shared<ConstantTexture>(Vec3(0.7f, 0.3f, 0.1f)))
+                                                            std::make_shared<ConstantTexture>(Vec3(0.9f, 0.3f, 0.1f)))
                                                         );
     // Spheres with different materials
 
@@ -113,32 +113,32 @@ HitableList createNextWeekFinalRender()
     // Metal
     hitables[numHit++] = std::make_shared<Sphere>(
                              Vec3(0.f, 150.f, 145.f),
-                             100.f,
-                             std::make_shared<Metal>(Vec3(0.8f, 0.8f, 0.9f), 1.f));
+                             80.f,
+                             std::make_shared<Metal>(Vec3(0.8f, 0.8f, 0.9f), 5.f));
 
     // Volume
     std::shared_ptr<Hitable> boundary = std::make_shared<Sphere>(
                                             Vec3(360.f, 150.f, 145.f),
-                                            70.f,
+                                            80.f,
                                             std::make_shared<Dielectric>(1.5f));
     hitables[numHit++] = boundary;
 
     hitables[numHit++] = std::make_shared<ConstantMedium>(
-                             boundary, 0.2f,
-                             std::make_shared<ConstantTexture>(Vec3(0.2f, 0.4f, 0.9f)));
+                             boundary, 0.1f,
+                             std::make_shared<ConstantTexture>(Vec3(0.2f, 0.7f, 0.9f)));
 
     // Volume surrounding the whole scene
     boundary = std::make_shared<Sphere>(
                    Vec3(0.f, 0.f, 0.f),
-                   5000.f,
+                   4000.f,
                    std::make_shared<Dielectric>(1.5f));
 
     hitables[numHit++] = std::make_shared<ConstantMedium>(
                              boundary, 0.0001f,
-                             std::make_shared<ConstantTexture>(Vec3(1.0f, 1.0f, 1.0f)));
+                             std::make_shared<ConstantTexture>(Vec3(1.0f, 0.8f, 0.8f)));
 
     // Noise Texture
-    std::shared_ptr<Texture> noiseTexture = std::make_shared<MarbleTexture>(0.1f);
+    std::shared_ptr<Texture> noiseTexture = std::make_shared<MarbleTexture>(0.2f);
     hitables[numHit++] = std::make_shared<Sphere>(
                              Vec3(220.f, 280.f, 300.f),
                              80.f,
@@ -146,20 +146,20 @@ HitableList createNextWeekFinalRender()
 
 
     // Create box with a bunch of sphere instances
-    size_t numSpheres = 1000;
+    size_t numSpheres = 2000;
     std::vector<std::shared_ptr<Hitable>> boxSpheres(numSpheres);
     for (size_t i = 0; i < numSpheres; ++i)
     {
         boxSpheres[i] = std::make_shared<Sphere>(Vec3(165.f * RandomGenerator::randFloat(),
                                                       165.f * RandomGenerator::randFloat(),
                                                       165.f * RandomGenerator::randFloat()),
-                                                 10.f,
+                                                 6.f,
                                                  white);
     }
     hitables[numHit++] = std::make_shared<Translate>(
                              std::make_shared<RotateY>(
-                                 std::make_shared<BVHNode>(boxSpheres, 0.f, 1.f)
-                                 , 15.f),
+                                 std::make_shared<BVHNode>(boxSpheres, 0.f, 1.f),
+                                 15.f),
                              Vec3(-100.f, 270.f, 395.f));
 
     return HitableList(hitables);
@@ -416,8 +416,8 @@ int main()
     auto world = createNextWeekFinalRender();
 
     // Image parameters
-    const int width = 200;
-    const int height = 200;
+    const int width = 250;
+    const int height = 250;
     const int numChannels = 3;
     std::vector<unsigned char> img(width * height * numChannels);
 
@@ -461,7 +461,7 @@ int main()
         }
     }
 
-    stbi_write_png("AmyWilliamsBVH.png", width, height, numChannels, img.data(), width*numChannels);
+    stbi_write_png("finalScene_1000.png", width, height, numChannels, img.data(), width*numChannels);
 
     return 0;
 }

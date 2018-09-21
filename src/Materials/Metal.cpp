@@ -1,15 +1,12 @@
 #include "Materials/Metal.h"
 
-Metal::Metal(const Vec3 & albedo, float fuzz) : m_albedo(albedo)
+Metal::Metal(const Vec3 & albedo, float fuzz)
+    : m_albedo(albedo), m_fuzz(fuzz)
 {
-	if (fuzz < 1)
-	{
-		m_fuzz = fuzz;
-	}
-	else
-	{
-		m_fuzz = 1;
-	}
+    if (fuzz > 1.f)
+    {
+        m_fuzz = 1.f;
+    }
 }
 
 bool Metal::scatter(const Ray & rayIn, const HitRecord & record, Vec3 & attenuation, Ray & scattered)
